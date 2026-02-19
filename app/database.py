@@ -27,5 +27,13 @@ class Base(DeclarativeBase):
     pass
  
 
+async def get_db():    # DRY func for api
+    async with async_session_factory() as session:
+        yield session
+    
+
 #Short models 
 bigint_pk = Annotated[int, mapped_column(BIGINT, Identity(always=True),primary_key=True)]
+
+
+

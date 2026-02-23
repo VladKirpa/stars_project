@@ -24,6 +24,7 @@ class Order(Base):
     created_at: Mapped[datetime.datetime] = mapped_column(server_default=func.now(), nullable=False)
     status: Mapped[str] = mapped_column(VARCHAR(50), default='pending')
     action_type: Mapped[str] = mapped_column(VARCHAR(30))
+    description: Mapped[str] = mapped_column(VARCHAR(250), nullable=True)
     
     @property
     def total_completions(self) -> int:

@@ -1,5 +1,6 @@
 from pydantic import BaseModel, ConfigDict
 from app.models import Task, TaskCompletion
+from app.schemas.order import OrderShortRead
 
 
 class TaskBase(BaseModel):
@@ -7,13 +8,12 @@ class TaskBase(BaseModel):
     #id order_id name desc
 
     order_id: int 
-    name: str
-    description: str | None=None
-
-
+    
 
 class TaskRead(TaskBase):
     id: int
-
-
+    order: OrderShortRead
+    
     model_config = ConfigDict(from_attributes=True)
+
+

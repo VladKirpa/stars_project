@@ -1,9 +1,7 @@
 from app.models import Order, Task, TaskCompletion, User
-from sqlalchemy import select, update, delete, func, join, insert
+from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 from app.schemas.order import OrderCreate, OrderRead
-from typing import List
-import asyncio
 from decimal import Decimal
 
 

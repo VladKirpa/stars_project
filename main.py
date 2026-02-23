@@ -1,24 +1,13 @@
 from fastapi import FastAPI
-from app.api import users, orders
+from app.api import users, orders, tasks
 
 app = FastAPI()
 app.include_router(users.router)
 app.include_router(orders.router)
+app.include_router(tasks.router)
 
 
 @app.get('/')
 async def root():
-    return {'message': 'Hello world!'}
+    return {'message': 'Hello!'}
 
-
-
-
-
-
-{
-  "subs_amount": 100,
-  "reward_for_sub": 0.5,
-  "channel_id": "tg/channel",
-  "creator_id": 90,
-  "action_type": "SUBSCRIBE_CHANNEL"
-}

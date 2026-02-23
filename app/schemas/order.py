@@ -15,8 +15,8 @@ class OrderBase(BaseModel):
 class OrderCreate(OrderBase):
     
     creator_id: int
-    action_type: Literal['SUBSCRIBE_CHANNEL'] # Allowrd action / change here to add new future
-    
+    action_type: Literal['SUBSCRIBE_CHANNEL'] # Allowed action / change here to add new options
+    description: str
 
 
 class OrderRead(OrderCreate):
@@ -25,4 +25,13 @@ class OrderRead(OrderCreate):
     # total_completions: int
     created_at: datetime.datetime
 
+    model_config = ConfigDict(from_attributes=True)
+
+
+
+class OrderShortRead(BaseModel):
+    action_type: Literal['SUBSCRIBE_CHANNEL']
+    description: str | None = None
+    channel_id: str
+    
     model_config = ConfigDict(from_attributes=True)

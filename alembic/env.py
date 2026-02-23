@@ -3,7 +3,9 @@ from app.database import Base
 from app.config import settings
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
-import app.models
+from app.models import (
+    User, Task, TaskCompletion, Order
+    )
 
 
 from alembic import context

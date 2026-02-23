@@ -3,16 +3,14 @@ from sqlalchemy import (
     DECIMAL, BIGINT, ForeignKey,
     )
 from app.database import Base
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from decimal import Decimal # Decimal for Mapped
 from app.database import bigint_pk
 
 
-
-## TABLES 
-
 class User(Base):
     __tablename__ = 'users'
+    orders: Mapped[list["Order"]] = relationship(back_populates="creator")
 
     id: Mapped[bigint_pk] 
     tg_id: Mapped[int] = mapped_column(BIGINT,nullable=False,unique=True)
@@ -20,9 +18,6 @@ class User(Base):
     referral_id: Mapped[int | None] = mapped_column(BIGINT, ForeignKey('users.tg_id'), default=None)
     balance: Mapped[Decimal] = mapped_column(DECIMAL(12, 2), default=0)
     stars_balance: Mapped[Decimal] = mapped_column(DECIMAL(12,2), default=0)
-
-
-
 
 
 

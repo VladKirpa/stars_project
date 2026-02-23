@@ -1,10 +1,7 @@
 from app.models import User
-from app.database import async_session_factory
-from sqlalchemy import select, update, delete, func
-from pydantic import BaseModel, ConfigDict
+from sqlalchemy import select
 from app.schemas.user import UserRead
-from typing import List
-import asyncio
+
 
 async def add_user(user_in: UserRead, session) -> User:
     user = await session.scalar(select(User).where(User.tg_id == user_in.tg_id))

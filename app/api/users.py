@@ -3,7 +3,7 @@ from fastapi import APIRouter
 import asyncio
 from app.schemas.user import UserCreate, UserRead
 from app.orm.users_orm import add_user
-from app.database import get_db, async_session_factory
+from app.database import get_db
 
 router = APIRouter()
 

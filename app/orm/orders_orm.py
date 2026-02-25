@@ -1,4 +1,5 @@
 from app.models import Order, Task, TaskCompletion, User
+from app.models.transaction_log import WalletType, ActionType, TransactionLog
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 from app.schemas.order import OrderCreate, OrderRead
@@ -13,8 +14,10 @@ async def create_order(order_data: OrderCreate, session) -> Order:
             total_price = order_data.subs_quantity * DEFAULT_REWARD_FOR_SUB
             if user.stars_balance >= total_price:                   # check is stars balance enough to create order
                 user.stars_balance -= total_price
-                bank = await session.get(User, SYSTEM_BANK_ID) 
-                bank.stars_balance += total_price                       # send total price to bank
+
+                bank = await session.scalar(select(User).where(User.id == SYSTEM_BANK_ID).with_for_update())  # safe way to get bank
+                                        
+                bank.stars_balance += total_price                        # send total price to bank
                 new_order = Order(
                     subs_quantity=order_data.subs_quantity,
                     channel_id=order_data.channel_id,
@@ -28,6 +31,17 @@ async def create_order(order_data: OrderCreate, session) -> Order:
                 await session.flush()       # set new order id to create task
                 new_task = Task(order_id=new_order.id)
                 session.add(new_task)
+
+                # save log to transaction
+                new_bill = TransactionLog(
+                    user_id=user.id,
+                    amount=total_price,
+                    wallet_type=WalletType.DEPOSITED,
+                    action_type=ActionType.ORDER_CREATION,
+                    order_id=new_order.id
+                )
+                session.add(new_bill)
+
                 await session.commit()
                 await session.refresh(new_order)
                 return new_order

@@ -1,4 +1,5 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from decimal import Decimal
 
 class Settings(BaseSettings):
     DB_HOST: str
@@ -16,4 +17,6 @@ class Settings(BaseSettings):
 
 settings=Settings()
 
-
+DEFAULT_REWARD_FOR_SUB = Decimal("1") 
+DEFAULT_WORKER_PAY = Decimal("0.25")
+SYSTEM_BANK_ID = 9

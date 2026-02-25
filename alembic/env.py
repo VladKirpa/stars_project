@@ -4,7 +4,7 @@ from app.config import settings
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 from app.models import (
-    User, Task, TaskCompletion, Order
+    User, Task, TaskCompletion, Order, TransactionLog, PendingPayment
     )
 
 

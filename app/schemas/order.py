@@ -3,6 +3,7 @@ import datetime
 from pydantic import BaseModel, ConfigDict, Field
 from app.models import Task, TaskCompletion
 from typing import Literal
+from app.config import DEFAULT_REWARD_FOR_SUB, DEFAULT_WORKER_PAY
 
 
 class OrderBase(BaseModel):

@@ -1,6 +1,6 @@
 import datetime
 from sqlalchemy import (
-    DECIMAL, BIGINT, ForeignKey, VARCHAR, TIMESTAMP, UniqueConstraint
+    DECIMAL, BIGINT, ForeignKey, VARCHAR, TIMESTAMP, UniqueConstraint, func
     )
 from app.database import Base
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -31,6 +31,9 @@ class TaskCompletion(Base):
     id: Mapped[bigint_pk]
     task_id: Mapped[int] = mapped_column(ForeignKey('tasks.id'))
     user_complete: Mapped[int] = mapped_column(ForeignKey('users.id'))
-    completed_at: Mapped[datetime.datetime] = mapped_column(TIMESTAMP)
+    completed_at: Mapped[datetime.datetime] = mapped_column(
+        default=datetime.datetime.utcnow,
+        server_default=func.now()
+    )
     
 

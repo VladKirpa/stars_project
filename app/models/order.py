@@ -21,6 +21,7 @@ class Order(Base):
     channel_id: Mapped[str] = mapped_column(VARCHAR(255))
     subs_quantity: Mapped[int] = mapped_column(BIGINT)
     reward_for_sub: Mapped[Decimal] = mapped_column(DECIMAL)
+    worker_pay: Mapped[Decimal] = mapped_column(DECIMAL)
     created_at: Mapped[datetime.datetime] = mapped_column(server_default=func.now(), nullable=False)
     status: Mapped[str] = mapped_column(VARCHAR(50), default='pending')
     action_type: Mapped[str] = mapped_column(VARCHAR(30))

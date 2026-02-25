@@ -1,4 +1,5 @@
 from app.models import Order, Task, TaskCompletion, User
+from app.models.transaction_log import WalletType, ActionType, TransactionLog
 from sqlalchemy import select, update, delete, func, join, insert, and_, outerjoin
 from sqlalchemy.orm import selectinload
 from app.schemas.order import OrderCreate, OrderRead
@@ -62,17 +63,52 @@ async def complete_task_transaction(user_id: int, task_id: int, session):
         #Transaction 
 
         session.add(TaskCompletion(user_complete=user_id, task_id=task_id))
-        worker = await session.get(User, user_id)
+        worker = await session.scalar(select(User).where(User.id == user_id).with_for_update()) # block race conditional for user
+        
         if not worker:
             raise HTTPException(status_code=400, detail='User do not exists')
-        system_bank = await session.get(User, SYSTEM_BANK_ID)                         #  <--- system bank id (change in config)
-
+        
+        system_bank = await session.scalar(select(User).where(User.id == SYSTEM_BANK_ID).with_for_update()) #  <--- system bank id (change in config) & block race conditional
+    
         if not system_bank: 
             raise HTTPException(status_code=400, detail='Bank account not defined')
 
         system_bank.stars_balance -= order.reward_for_sub                # write off full price from Escrow
+
+        #save bill for SYSTEM_BANK
+        sys_bank_bill = TransactionLog(
+            user_id=SYSTEM_BANK_ID,
+            amount=order.reward_for_sub,
+            wallet_type=WalletType.DEPOSITED,
+            action_type=ActionType.TASK_PAYMENT,
+            order_id=order.id
+        )
+        session.add(sys_bank_bill)
+
         worker.balance += order.worker_pay                               # pay worker for task
+
+        #save bill for Worker earned 
+        worker_earned = TransactionLog(
+            user_id=worker.id,
+            amount=order.worker_pay,
+            wallet_type=WalletType.EARNED,
+            action_type=ActionType.TASK_PAYMENT,
+            order_id=order.id
+        )
+        session.add(worker_earned)
+
         system_bank.balance += order.reward_for_sub - order.worker_pay   # count service margin and put it to bank balance
+        
+        #save service revenue bill
+
+        service_revenue_bill = TransactionLog(
+            user_id=SYSTEM_BANK_ID,
+            amount=order.reward_for_sub - order.worker_pay,
+            wallet_type=WalletType.EARNED,
+            action_type=ActionType.SYSTEM_REVENUE,
+            order_id=order.id
+        )
+        session.add(service_revenue_bill)
 
         if count_curr_subs + 1 >= order.subs_quantity:                   # close order if it was last sub
             order.status = 'completed'

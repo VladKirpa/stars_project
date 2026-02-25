@@ -1,7 +1,7 @@
 import datetime
 import enum
 from sqlalchemy import (
-    DECIMAL, func, String, Enum as SQLEnum
+    DECIMAL, func, String, Enum as SQLEnum, BIGINT, ForeignKey
     )
 from app.database import Base
 from sqlalchemy.orm import Mapped, mapped_column
@@ -18,6 +18,7 @@ class PendingPayment(Base):
     __tablename__='pending_payments'
     
     id: Mapped[bigint_pk]
+    user_id: Mapped[int] = mapped_column(BIGINT, ForeignKey('users.id'))
     external_id: Mapped[str] = mapped_column(String, index=True ,unique=True)
     provider: Mapped[str] = mapped_column(String)
     amount_stars: Mapped[Decimal] = mapped_column(DECIMAL(12,2))

@@ -21,7 +21,7 @@ class PendingPayment(Base):
     user_id: Mapped[int] = mapped_column(BIGINT, ForeignKey('users.id'))
     external_id: Mapped[str] = mapped_column(String, index=True ,unique=True)
     provider: Mapped[str] = mapped_column(String)
-    amount_stars: Mapped[Decimal] = mapped_column(DECIMAL(12,2))
+    amount_stars: Mapped[Decimal] = mapped_column(DECIMAL)
     amount_fiat: Mapped[Decimal] = mapped_column(DECIMAL(12,2))
     currency: Mapped[str] = mapped_column(String, default='USDT')
     status: Mapped[PaymentStatus] = mapped_column(SQLEnum(PaymentStatus))

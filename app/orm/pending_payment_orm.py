@@ -1,13 +1,9 @@
-from app.models import Order, Task, TaskCompletion, User,
+from app.models import Order, Task, TaskCompletion, User
 from app.models.pending_payments import PaymentStatus, PendingPayment
 from app.models.transaction_log import WalletType, ActionType, TransactionLog
-from sqlalchemy import select, update, delete, func, join, insert, and_, outerjoin
-from sqlalchemy.orm import selectinload
-from app.schemas.order import OrderCreate, OrderRead
-from typing import List
-import asyncio
-from decimal import Decimal
-from app.config import SYSTEM_BANK_ID, STARS_TO_USDT
+from sqlalchemy import select
+
+
 from fastapi import HTTPException
 
 
@@ -22,6 +18,9 @@ async def confirm_payment(external_id:str, session) -> dict:
         if not payment or payment.status == PaymentStatus.PAID:
             raise HTTPException(status_code=400, detail='Order has been already paid')
         
+        if payment.status != PaymentStatus.CREATED:
+            raise HTTPException(status_code=400, detail='Order has been expired')
+
         #find user who payied
         user = await session.scalar(
             select(User)
@@ -45,6 +44,11 @@ async def confirm_payment(external_id:str, session) -> dict:
 
         payment.status = PaymentStatus.PAID
         await session.commit()
+        return {
+            'status': payment.status,
+            'stars_added': payment.amount_stars,
+            'new_balance': user.stars_balance
+        }
     
     except HTTPException as http_exc:
         await session.rollback()

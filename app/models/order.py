@@ -20,6 +20,7 @@ class Order(Base):
     creator_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
     channel_id: Mapped[str] = mapped_column(VARCHAR(255))
     subs_quantity: Mapped[int] = mapped_column(BIGINT)
+    current_subs: Mapped[int] = mapped_column(BIGINT)
     reward_for_sub: Mapped[Decimal] = mapped_column(DECIMAL)
     worker_pay: Mapped[Decimal] = mapped_column(DECIMAL)
     created_at: Mapped[datetime.datetime] = mapped_column(server_default=func.now(), nullable=False)

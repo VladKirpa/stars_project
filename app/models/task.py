@@ -1,6 +1,7 @@
 import datetime
+import enum
 from sqlalchemy import (
-    DECIMAL, BIGINT, ForeignKey, VARCHAR, TIMESTAMP, UniqueConstraint, func
+    DECIMAL, BIGINT, ForeignKey, VARCHAR, TIMESTAMP, UniqueConstraint, func, Enum as SQLENUM
     )
 from app.database import Base
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -8,6 +9,10 @@ from decimal import Decimal # Decimal for Mapped
 from app.database import bigint_pk
 
 
+class CompletionStatus(enum.Enum):
+    FROZEN='frozen'
+    COMPLETED='completed'
+    CANCELED='canceled'
 
 class Task(Base):
     __tablename__ = 'tasks'
@@ -31,9 +36,15 @@ class TaskCompletion(Base):
     id: Mapped[bigint_pk]
     task_id: Mapped[int] = mapped_column(ForeignKey('tasks.id'))
     user_complete: Mapped[int] = mapped_column(ForeignKey('users.id'))
+    stars_reward: Mapped[Decimal] = mapped_column(DECIMAL(12, 2))
+    status: Mapped[CompletionStatus] = mapped_column(SQLENUM(CompletionStatus))
+    unlock_date: Mapped[datetime.datetime] = mapped_column(
+        default=lambda: datetime.datetime.utcnow() + datetime.timedelta(days=3)
+    )
     completed_at: Mapped[datetime.datetime] = mapped_column(
         default=datetime.datetime.utcnow,
         server_default=func.now()
     )
     
+
 

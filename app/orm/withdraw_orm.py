@@ -15,6 +15,17 @@ async def create_withdrawal_request(user_id:int, amount:int, session):
     try:
         if not isinstance(amount, int):
             raise HTTPException(status_code=400, detail='Amount can be only integer')
+        
+        # check if active request exists
+        active_request = await session.scalar(
+            select(WithdrawalRequest)
+            .where(
+                WithdrawalRequest.user_id == user_id,
+                WithdrawalRequest.status == WithdrawalStatus.PENDING
+            )
+        )
+        if active_request:
+            raise HTTPException(status_code=400, detail='You already have a pending withdrawal request')
 
         user = await session.scalar(
             select(User)

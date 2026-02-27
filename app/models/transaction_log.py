@@ -13,14 +13,23 @@ from app.database import bigint_pk
 class WalletType(enum.Enum):
     EARNED='earned'
     DEPOSITED='deposited'
+    WITHDRAW='withdraw'
+
 
 
 class ActionType(enum.Enum):
     DEPOSIT='deposit'
     ORDER_CREATION='order_creation'
+    ORDER_REFUND='order_refund'
+
     TASK_PAYMENT='task_payment'
     SYSTEM_REVENUE='system_revenue'
     WITHDRAWAL='withdrawal'
+    ADMIN_EMISSION='admin_emission'
+    ADMIN_TOPUP='admin_topup'
+
+    WITHDRAW_APPROVED='withdraw_approved'
+    WITHDRAW_REJECTED='withdraw_rejected'
 
 
 class TransactionLog(Base):
@@ -33,7 +42,7 @@ class TransactionLog(Base):
     action_type: Mapped[ActionType] = mapped_column(SQLEnum(ActionType))
     order_id: Mapped[int | None] = mapped_column(BIGINT, ForeignKey('orders.id'), nullable=True) 
     created_at: Mapped[datetime.datetime] = mapped_column(default=datetime.datetime.utcnow,
-                                                           server_default=func.now(), nullable=False)
+                                                        server_default=func.now(), nullable=False)
 
 
 

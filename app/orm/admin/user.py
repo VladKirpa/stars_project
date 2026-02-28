@@ -104,7 +104,8 @@ async def ban_user(user_id:int, session):
                 withdraw_request.status = WithdrawalStatus.REJECTED 
 
             await session.commit()
-                
+
+            return {"status": "success", "message": f"User {user_id} banned successfully"}
 
             
         else:
@@ -131,6 +132,7 @@ async def unban_user(user_id:int, session):
         user.is_banned=False
         user.strikes = 0
         await session.commit()
+        return {"status": "success", "message": f"User {user_id} unbanned successfully"}
 
     except HTTPException as http:
         await session.rollback()

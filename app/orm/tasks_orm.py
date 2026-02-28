@@ -114,4 +114,3 @@ async def complete_task_transaction(user_id: int, task_id: int, session):
         await session.rollback()
         print(f'Critical error: {repr(e)}')
         raise HTTPException(status_code=500, detail='Something went wrong')
-        

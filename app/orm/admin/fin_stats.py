@@ -14,32 +14,29 @@ async def get_global_financial_stats(session) -> dict:
 
     # Hold money
     frozen_query = select(func.coalesce(func.sum(TaskCompletion.stars_reward), Decimal('0'))).where(
-        TaskCompletion.status == CompletionStatus.FROZEN
-    )
+        TaskCompletion.status == CompletionStatus.FROZEN)
     total_frozen_funds = await session.scalar(frozen_query)
 
     # clear revenue
     revenue_query = select(func.coalesce(func.sum(TransactionLog.amount), Decimal('0'))).where(
-        TransactionLog.action_type == ActionType.SYSTEM_REVENUE
-    )
+        TransactionLog.action_type == ActionType.SYSTEM_REVENUE)
     total_system_revenue = await session.scalar(revenue_query)
 
     # Amdin emission (when create custom tasks)
     emission_query = select(func.coalesce(func.sum(TransactionLog.amount), Decimal('0'))).where(
-        TransactionLog.action_type == ActionType.ADMIN_EMISSION
-    )
+        TransactionLog.action_type == ActionType.ADMIN_EMISSION)
     admin_emission_debt = await session.scalar(emission_query)
 
     # Money earned by users for all time 
     withdrawn_query = select(func.coalesce(func.sum(WithdrawalRequest.amount), Decimal('0'))).where(
-        WithdrawalRequest.status == WithdrawalStatus.APPROVED
-    )
+        WithdrawalRequest.status == WithdrawalStatus.APPROVED)
     total_withdrawn = await session.scalar(withdrawn_query)
 
     return {
-        "total_user_balances": total_user_balances,
-        "total_frozen_funds": total_frozen_funds,
-        "total_system_revenue": total_system_revenue,
-        "admin_emission_debt": admin_emission_debt,
-        "total_withdrawn": total_withdrawn
+        "total_user_balances": float(total_user_balances or 0),
+        "total_frozen_funds": float(total_frozen_funds or 0 ),
+        "total_system_revenue": float(total_system_revenue or 0),
+        "admin_emission_debt": float(admin_emission_debt or 0),
+        "total_withdrawn": float(total_withdrawn or 0 )
     }
+

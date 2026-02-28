@@ -10,12 +10,11 @@ async def create_custom_admin_order(
     channel_url: str, 
     subs_quantity: int, 
     custom_worker_pay: Decimal,
+    description: str,
     session
 ):
     try:
         # woker pay cannot be less than reward_for_sub
-        if custom_worker_pay > custom_reward_for_sub:
-            raise HTTPException(status_code=400, detail="Worker pay cannot be greater than total reward")
         if subs_quantity <= 0 or custom_worker_pay <= 0:
             raise HTTPException(status_code=400, detail="Values must be greater than zero")
 
@@ -32,13 +31,14 @@ async def create_custom_admin_order(
         system_bank.stars_balance += total_emission 
 
         new_order = Order(
-            user_id=admin_id,
-            channel_url=channel_url,
+            creator_id=admin_id,
+            channel_id=channel_url,
             subs_quantity=subs_quantity,
             current_subs=0,
             worker_pay=custom_worker_pay,
             reward_for_sub=custom_worker_pay,
-            status='pending'
+            status='pending',
+            desctiption=description
         )
         session.add(new_order)
         await session.flush() # make flush to get order id

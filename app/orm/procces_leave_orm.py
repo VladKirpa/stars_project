@@ -47,6 +47,8 @@ async def process_user_leave(user_id: int, order_id: int, session):
                 order.current_subs -= 1
                     
         await session.commit()
+        
+        return {"status": "success", "message": f"User {user_id} leave processed"}
 
     except Exception as e:
         await session.rollback()

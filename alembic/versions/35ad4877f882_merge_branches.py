@@ -1,7 +1,7 @@
 """merge branches
 
 Revision ID: 35ad4877f882
-Revises: 0dac8c41f901, e7a27e547430
+Revises: 0dac8c41f901
 Create Date: 2026-02-25 19:47:55.051328
 
 """
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision: str = '35ad4877f882'
-down_revision: Union[str, Sequence[str], None] = ('0dac8c41f901', 'e7a27e547430')
+down_revision: Union[str, Sequence[str], None] = '0dac8c41f901'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

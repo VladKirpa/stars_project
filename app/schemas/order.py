@@ -25,6 +25,7 @@ class OrderRead(OrderCreate):
     status: str
     # total_completions: int
     created_at: datetime.datetime
+    current_subs: int
 
     model_config = ConfigDict(from_attributes=True)
 

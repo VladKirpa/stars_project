@@ -19,7 +19,7 @@ settings=Settings()
 
 DEFAULT_REWARD_FOR_SUB = Decimal("1") 
 DEFAULT_WORKER_PAY = Decimal("0.25")
-SYSTEM_BANK_ID = 9
+SYSTEM_BANK_ID = 19
 STARS_TO_USDT = Decimal('0.013')
 MIN_WITHDRAWAL = Decimal(25)
 

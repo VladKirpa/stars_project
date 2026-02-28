@@ -41,6 +41,8 @@ async def approve_withdraw_transaction(user_id:int, withdraw_id:int, session): #
         session.add(approve_bill)
         await session.commit()
 
+        return {"status": "success", "message": f"Withdrawal {withdraw_id} approved"}
+
     except HTTPException as http_exc:
         await session.rollback()
         raise http_exc
@@ -84,6 +86,8 @@ async def reject_withdraw_transaction(user_id: int, withdraw_id:int, session ): 
         withdraw_order.status = WithdrawalStatus.REJECTED
         session.add(reject_bill)
         await session.commit()
+
+        return {"status": "success", "message": f"Withdrawal {withdraw_id} rejected"}
         
     except HTTPException as http_exc:
         await session.rollback()

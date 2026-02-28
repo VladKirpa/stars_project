@@ -57,6 +57,7 @@ async def create_withdrawal_request(user_id:int, amount:int, session):
             session.add(new_withdraw)
             session.add(new_bill)
             await session.commit()
+            return {"status": "success", "message": "Withdrawal request created successfully"}
         else:
             raise HTTPException(status_code=400, detail='Not enough balance or amount less than minimal withdraw sum')
     

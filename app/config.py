@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     DB_USER: str
     DB_PASS: str
     DB_NAME: str
+    REDIS_URL: str
 
     @property
     def DATABASE_URL_asyncpg(self):
@@ -19,7 +20,7 @@ settings=Settings()
 
 DEFAULT_REWARD_FOR_SUB = Decimal("1") 
 DEFAULT_WORKER_PAY = Decimal("0.25")
-SYSTEM_BANK_ID = 19
+SYSTEM_BANK_ID = 1
 STARS_TO_USDT = Decimal('0.013')
 MIN_WITHDRAWAL = Decimal(25)
 

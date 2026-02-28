@@ -26,7 +26,7 @@ async def cancel_order_by_admin(order_id: int, session):
         order.status = 'canceled'
 
         # return money to customer
-        user = await session.scalar(select(User).where(User.id == order.user_id).with_for_update())
+        user = await session.scalar(select(User).where(User.id == order.creator_id).with_for_update())
         if user:
             user.stars_balance += refund_amount
             session.add(TransactionLog(

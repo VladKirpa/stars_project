@@ -1,28 +1,43 @@
 from app.models import User
 from sqlalchemy import select
-from app.schemas.user import UserRead
+from app.schemas.user import UserCreate
 
+async def add_user(user_in: UserCreate, session) -> User:
 
-async def add_user(user_in: UserRead, session) -> User:
     user = await session.scalar(select(User).where(User.tg_id == user_in.tg_id))
+    
     if user:
-        udpated_data = user_in.model_dump()
-        for k,v in udpated_data.items():
-            if k == 'tg_id':
-                continue
-            
-            if v != getattr(user, k, v):
-                setattr(user, k,v)
-
-        await session.commit()
+        # refresh user if user exists
+        if user_in.username and user.username != user_in.username:
+            user.username = user_in.username
+            await session.commit()
         return user
         
-    #if not exist
-    new_user = User(**user_in.model_dump())
-    session.add(new_user)
-    await session.commit() # save to get ID 
-    await session.refresh(new_user) # refresh object to get correct ID 
-    return new_user
     
+    ref_id = user_in.referral_id
+    
+    if ref_id == user_in.tg_id:
+        ref_id = None
+        
+    # Check if this ref exists
+    if ref_id:
+        referrer = await session.scalar(select(User).where(User.tg_id == ref_id))
+        if not referrer:
+            ref_id = None
 
+    new_user = User(
+        tg_id=user_in.tg_id,
+        username=user_in.username,
+        referral_id=ref_id
+    )
+    session.add(new_user)
+    await session.commit() 
+    await session.refresh(new_user) 
+    return new_user
+
+
+async def get_user_referrals(tg_id: int, session) -> list[User]:  # return ref stats
+    query = select(User).where(User.referral_id == tg_id)
+    result = await session.scalars(query)
+    return list(result.all())
 

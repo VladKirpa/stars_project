@@ -8,6 +8,8 @@ class Settings(BaseSettings):
     DB_PASS: str
     DB_NAME: str
     REDIS_URL: str
+    BOT_TOKEN: str
+    ADMIN_IDS: list[int] = []
 
     @property
     def DATABASE_URL_asyncpg(self):

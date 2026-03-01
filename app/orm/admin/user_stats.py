@@ -33,6 +33,7 @@ async def get_user_profile(identifier: str | int, session) -> dict:
         "id": user.id,
         "username": user.username,
         "balance": user.balance,
+        "stars_balance": user.stars_balance,
         "frozen_balance": frozen_balance,
         "strikes": user.strikes,
         "is_banned": user.is_banned

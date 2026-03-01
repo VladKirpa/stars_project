@@ -55,22 +55,39 @@ async def ban_user(user_id:int, session):
             user.is_banned = True
             sys_bank = await session.scalar(select(User).where(User.id==SYSTEM_BANK_ID).with_for_update())
             sys_bank.balance += user.balance
-            sys_bill = TransactionLog(
+            sys_bank.stars_balance+=user.stars_balance
+            sys_bill_balance = TransactionLog(
                 user_id=SYSTEM_BANK_ID,
                 amount=user.balance,
                 wallet_type=WalletType.EARNED,
                 action_type=ActionType.SYSTEM_REVENUE
             )
+            sys_bill_stars_balance = TransactionLog(
+                user_id=SYSTEM_BANK_ID,
+                amount=user.stars_balance,
+                wallet_type=WalletType.EARNED,
+                action_type=ActionType.SYSTEM_REVENUE
+            )
+
             user_bill = TransactionLog(
                 user_id=user.id,
                 amount=user.balance,
                 wallet_type=WalletType.EARNED,
                 action_type=ActionType.SYSTEM_REVENUE
             )
+            user_stars_bill = TransactionLog(
+                user_id=user.id,
+                amount=user.stars_balance,
+                wallet_type=WalletType.EARNED,
+                action_type=ActionType.SYSTEM_REVENUE
+            )
             user.balance = Decimal('0')
+            user.stars_balance = Decimal('0')
 
-            session.add(sys_bill)
+            session.add(sys_bill_balance)
+            session.add(sys_bill_stars_balance)
             session.add(user_bill)
+            session.add(user_stars_bill)
 
             completed_tasks = await session.scalars(
                 select(TaskCompletion)

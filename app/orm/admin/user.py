@@ -2,7 +2,7 @@ from app.models import Order, Task, TaskCompletion, User
 from app.models.transaction_log import WalletType, ActionType, TransactionLog
 from app.models.withdrawal_request import WithdrawalRequest, WithdrawalStatus
 from app.models.task import CompletionStatus
-from sqlalchemy import select, update, delete, func, join, insert, and_, outerjoin
+from sqlalchemy import select, update, delete, func, join, insert, and_, outerjoin, or_
 from sqlalchemy.orm import selectinload
 from app.schemas.order import OrderCreate, OrderRead
 from typing import List
@@ -13,39 +13,35 @@ from fastapi import HTTPException
 
 
 
-async def get_user_logs_paginated(identifier:str | int, session, 
-                                  limit:int = 10, 
-                                  offset:int = 0) -> list[TransactionLog]:
-    try: 
-        # smart search
+async def get_user_with_logs(identifier: str | int, session, limit: int = 5, offset: int = 0):
+    try:
         if isinstance(identifier, int) or (isinstance(identifier, str) and identifier.isdigit()):
-            user_query = select(User.id).where(User.id == int(identifier))
+            val = int(identifier)
+            user_query = select(User).where(or_(User.tg_id == val, User.id == val))
         else:
             clean_username = str(identifier).replace('@', '')
-            user_query = select(User.id).where(User.username.ilike(clean_username))
+            user_query = select(User).where(User.username.ilike(clean_username))
 
-        user_id = await session.scalar(user_query)
-        
-        if not user_id:
-            raise HTTPException(status_code=404, detail='User not found')
+        user = await session.scalar(user_query)
+        if not user:
+            return None, None, 0
 
-        # find logs from new to old 
+        total_logs = await session.scalar(
+            select(func.count(TransactionLog.id)).where(TransactionLog.user_id == user.id)
+        )
+
         logs_query = (
             select(TransactionLog)
-            .where(TransactionLog.user_id == user_id)
+            .where(TransactionLog.user_id == user.id)
             .order_by(TransactionLog.created_at.desc())
             .limit(limit)
             .offset(offset)
         )
+        logs = (await session.scalars(logs_query)).all()
         
-        result = await session.scalars(logs_query)
-        return result.all()
-
-    except HTTPException as http_exc: 
-        raise http_exc
+        return user, logs, total_logs
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f'Error: {str(e)}')
-
+        raise e
 
 async def ban_user(user_id:int, session):
     try:

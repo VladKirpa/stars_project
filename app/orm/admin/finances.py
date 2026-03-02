@@ -97,6 +97,27 @@ async def reject_withdraw_transaction(user_id: int, withdraw_id:int, session ): 
         await session.rollback()
         raise HTTPException(status_code=500, detail=f'Error {str(e)}')
     
+# count unprocessed orders to withdraw
+async def count_pending_withdrawals(session) -> int:
+    query = select(func.count(WithdrawalRequest.id)).where(WithdrawalRequest.status == WithdrawalStatus.PENDING)
+    return await session.scalar(query)
+
+#take only first order to show in admin panel
+async def get_pending_withdrawal_by_offset(session, offset: int):
+    query = (
+        select(WithdrawalRequest, User)
+        .join(User, WithdrawalRequest.user_id == User.id)
+        .where(WithdrawalRequest.status == WithdrawalStatus.PENDING)
+        .order_by(WithdrawalRequest.created_at.asc())
+        .limit(1)
+        .offset(offset)
+    )
+    result = await session.execute(query)
+    row = result.first()
+    if row:
+        return {"request": row[0], "user": row[1]}
+    return None
+    
 # handel top up by admin, can select what wallet need to top up, ussual balance or stars_balance 
 async def manual_balance_update(
     identifier: str | int, 

@@ -28,7 +28,9 @@ async def cmd_admin(message: Message):
 
     kb = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="📊 Финансовая статистика", callback_data="admin_stats")],
-        [InlineKeyboardButton(text="🔍 Найти пользователя", callback_data="admin_find_user")]
+        [InlineKeyboardButton(text="🔍 Найти пользователя", callback_data="admin_find_user")],
+        [InlineKeyboardButton(text="🛠 Создать кастомный таск", callback_data="admin_create_task")],
+        [InlineKeyboardButton(text="💸 Заявки на вывод", callback_data="admin_withdraws_0")]
     ])
     
     await message.answer("👑 <b>AdminPanel</b> 👑", reply_markup=kb, parse_mode="HTML")
@@ -65,7 +67,9 @@ async def back_to_menu(call: CallbackQuery):
         
     kb = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="📊 Финансовая статистика", callback_data="admin_stats")],
-        [InlineKeyboardButton(text="🔍 Найти пользователя", callback_data="admin_find_user")]
+        [InlineKeyboardButton(text="🔍 Найти пользователя", callback_data="admin_find_user")],
+        [InlineKeyboardButton(text="🛠 Создать кастомный таск", callback_data="admin_create_task")],
+        [InlineKeyboardButton(text="💸 Заявки на вывод", callback_data="admin_withdraws_0")]
     ])
     
     await call.message.edit_text("👑 <b>AdminPanel</b> 👑", reply_markup=kb, parse_mode="HTML")
@@ -171,7 +175,7 @@ async def choose_balance_type(call: CallbackQuery):
         [InlineKeyboardButton(text="❌ Отмена", callback_data="admin_back")]
     ])
     
-    await call.message.edit_text("⚖️ <b>Выбери балик?</b>", reply_markup=kb, parse_mode="HTML")
+    await call.message.edit_text("⚖️ <b>Выбери балик</b>", reply_markup=kb, parse_mode="HTML")
 
 @admin_router.callback_query(F.data.startswith("admin_baltype_"))
 async def ask_topup_amount(call: CallbackQuery, state: FSMContext):

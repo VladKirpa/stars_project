@@ -3,7 +3,7 @@ from decimal import Decimal
 from app.models import User
 from sqlalchemy import select
 from app.orm.admin.finances import manual_balance_update
-from app.orm.admin.user_stats import get_user_profile
+from app.orm.admin.user import get_user_with_logs
 from app.orm.admin.user import ban_user, unban_user
 from aiogram import Router, F
 from aiogram.filters import Command
@@ -30,7 +30,8 @@ async def cmd_admin(message: Message):
         [InlineKeyboardButton(text="📊 Финансовая статистика", callback_data="admin_stats")],
         [InlineKeyboardButton(text="🔍 Найти пользователя", callback_data="admin_find_user")],
         [InlineKeyboardButton(text="🛠 Создать кастомный таск", callback_data="admin_create_task")],
-        [InlineKeyboardButton(text="💸 Заявки на вывод", callback_data="admin_withdraws_0")]
+        [InlineKeyboardButton(text="💸 Заявки на вывод", callback_data="admin_withdraws_0")],
+        [InlineKeyboardButton(text="❌ Отменить заказ по ID", callback_data="admin_cancel_order")] 
     ])
     
     await message.answer("👑 <b>AdminPanel</b> 👑", reply_markup=kb, parse_mode="HTML")
@@ -41,8 +42,6 @@ async def show_stats(call: CallbackQuery, session: AsyncSession):
         return
 
     await call.answer("Загружаю данные...") 
-    
-    # Вызываем твою шикарную ORM-функцию
     stats = await get_global_financial_stats(session)
     
     text = (
@@ -69,7 +68,8 @@ async def back_to_menu(call: CallbackQuery):
         [InlineKeyboardButton(text="📊 Финансовая статистика", callback_data="admin_stats")],
         [InlineKeyboardButton(text="🔍 Найти пользователя", callback_data="admin_find_user")],
         [InlineKeyboardButton(text="🛠 Создать кастомный таск", callback_data="admin_create_task")],
-        [InlineKeyboardButton(text="💸 Заявки на вывод", callback_data="admin_withdraws_0")]
+        [InlineKeyboardButton(text="💸 Заявки на вывод", callback_data="admin_withdraws_0")],
+        [InlineKeyboardButton(text="❌ Отменить заказ", callback_data="admin_cancel_order")] 
     ])
     
     await call.message.edit_text("👑 <b>AdminPanel</b> 👑", reply_markup=kb, parse_mode="HTML")
@@ -92,25 +92,31 @@ async def process_user_search(message: Message, state: FSMContext, session: Asyn
     identifier = message.text.strip()
     
     try:
-        user_data = await get_user_profile(identifier, session)
+        user, _, _ = await get_user_with_logs(identifier, session, limit=0, offset=0)
+        
+        if not user:
+            kb = InlineKeyboardMarkup(inline_keyboard=[
+                [InlineKeyboardButton(text="🔙 Назад", callback_data="admin_back")]
+            ])
+            return await message.answer("❌ <b>Пользователь не найден в базе.</b>", reply_markup=kb, parse_mode="HTML")
         
         text = (
             f"👤 <b>Пользователь найден:</b>\n\n"
-            f"ID: <code>{user_data['id']}</code>\n"
-            f"Юзернейм: @{user_data['username'] or 'Нет'}\n"
-            f"Обычный баланс: <b>{user_data['balance']} 💵</b>\n"
-            f"Звездный баланс: <b>{user_data['stars_balance']} ⭐️</b>\n"
-            f"В холде: {user_data['frozen_balance']} ❄️\n"
-            f"Страйки: {user_data['strikes']} ⚠️\n"
-            f"Статус: {'🔴 ЗАБАНЕН' if user_data['is_banned'] else '🟢 Активен'}"
+            f"ID в базе: <code>{user.id}</code>\n"
+            f"TG ID: <code>{user.tg_id}</code>\n"
+            f"Юзернейм: @{user.username or 'Нет'}\n"
+            f"Звездный баланс: <b>{user.stars_balance} ⭐️</b>\n"
+            f"Обычный баланс: <b>{user.balance} 💵</b>\n"
+            f"Статус: {'🔴 ЗАБАНЕН' if user.is_banned else '🟢 Активен'}"
         )
 
         kb = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text="📜 Логи транзакций", callback_data=f"admin_logs_{user.tg_id}_0")],
             [InlineKeyboardButton(
-                text="Разбанить 🟢" if user_data['is_banned'] else "Забанить 🔴", 
-                callback_data=f"admin_ban_{user_data['id']}"
+                text="Разбанить 🟢" if user.is_banned else "Забанить 🔴", 
+                callback_data=f"admin_ban_{user.id}"
             )],
-            [InlineKeyboardButton(text="💰 Выдать баланс", callback_data=f"admin_topup_{user_data['id']}")],
+            [InlineKeyboardButton(text="💰 Выдать баланс", callback_data=f"admin_topup_{user.id}")],
             [InlineKeyboardButton(text="🔙 В меню", callback_data="admin_back")]
         ])
 
@@ -121,7 +127,8 @@ async def process_user_search(message: Message, state: FSMContext, session: Asyn
         kb = InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(text="🔙 Назад", callback_data="admin_back")]
         ])
-        await message.answer("❌ <b>Пользователь не найден в базе.</b>\nПроверь ID или вернись в меню.", reply_markup=kb, parse_mode="HTML")
+        error_msg = html.escape(repr(e))
+        await message.answer(f"❌ <b>Ошибка при выводе профиля:</b>\n<code>{error_msg}</code>", reply_markup=kb, parse_mode="HTML")
         await state.clear()
 
 #ban/unban user
@@ -244,4 +251,55 @@ async def process_topup_amount(message: Message, state: FSMContext, session: Asy
     finally:
         await state.clear()
 
+# LOGS 
+@admin_router.callback_query(F.data.startswith("admin_logs_"))
+async def show_user_logs_handler(call: CallbackQuery, session: AsyncSession):
+    if not is_admin(call.from_user.id):
+        return
 
+    parts = call.data.split("_")
+    target_user_id = int(parts[2]) # tg id or id
+    page = int(parts[3])
+    limit = 5
+    offset = page * limit
+
+    try:
+        user, logs, total = await get_user_with_logs(
+            identifier=target_user_id, 
+            session=session, 
+            limit=limit + 1,
+            offset=offset
+        )
+
+        if not user:
+            return await call.answer("Пользователь не найден.", show_alert=True)
+
+        if not logs and page == 0:
+            return await call.answer("У этого пользователя еще нет транзакций.", show_alert=True)
+
+        has_next = len(logs) > limit
+        display_logs = logs[:limit]
+
+        text = f"📜 <b>Логи транзакций (ID: {user.id})</b>\n<i>Стр. {page + 1}</i>\n\n"
+        
+        for log in display_logs:
+            icon = "➕" if log.amount > 0 else "➖"
+            text += f"{icon} <b>{abs(log.amount)}</b> | <code>{log.action_type.value}</code>\n📅 {log.created_at.strftime('%d.%m %H:%M')}\n\n"
+
+        nav_buttons = []
+        if page > 0:
+            nav_buttons.append(InlineKeyboardButton(text="⬅️ Пред.", callback_data=f"admin_logs_{target_user_id}_{page-1}"))
+        if has_next:
+            nav_buttons.append(InlineKeyboardButton(text="След. ➡️", callback_data=f"admin_logs_{target_user_id}_{page+1}"))
+
+        kb_list = []
+        if nav_buttons:
+            kb_list.append(nav_buttons)
+        kb_list.append([InlineKeyboardButton(text="🔙 Назад в профиль", callback_data=f"admin_back")]) 
+
+        kb = InlineKeyboardMarkup(inline_keyboard=kb_list)
+        
+        await call.message.edit_text(text, reply_markup=kb, parse_mode="HTML")
+
+    except Exception as e:
+        await call.message.answer(f"❌ <b>Ошибка загрузки логов:</b> {html.escape(str(e))}", parse_mode="HTML")

@@ -8,6 +8,7 @@ from tg_bot.middlewares.auth import AuthMiddleware
 from tg_bot.handlers.admin import admin_router
 from tg_bot.handlers.admin_tasks import admin_tasks_router
 from tg_bot.handlers.admin_withdraw import admin_withdraw_router
+from tg_bot.handlers.admin_orders import admin_orders_router
 
 async def main():
     logging.basicConfig(level=logging.INFO)
@@ -23,6 +24,7 @@ async def main():
     dp.include_router(admin_router)
     dp.include_router(admin_tasks_router)
     dp.include_router(admin_withdraw_router)
+    dp.include_router(admin_orders_router)
 
     print("🚀 Started...")
     try:

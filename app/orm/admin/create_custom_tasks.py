@@ -6,7 +6,7 @@ from app.config import SYSTEM_BANK_ID
 from fastapi import HTTPException
 
 async def create_custom_admin_order(
-    admin_id: int, 
+    admin_tg_id: int, 
     channel_url: str, 
     subs_quantity: int, 
     custom_worker_pay: Decimal,
@@ -14,6 +14,12 @@ async def create_custom_admin_order(
     session
 ):
     try:
+        admin = await session.scalar(select(User).where(User.tg_id == admin_tg_id))
+        if not admin:
+            raise HTTPException(status_code=404, detail="Admin not found in database")
+        
+        admin_internal_id = admin.id
+
         # woker pay cannot be less than reward_for_sub
         if subs_quantity <= 0 or custom_worker_pay <= 0:
             raise HTTPException(status_code=400, detail="Values must be greater than zero")
@@ -31,14 +37,15 @@ async def create_custom_admin_order(
         system_bank.stars_balance += total_emission 
 
         new_order = Order(
-            creator_id=admin_id,
+            creator_id=admin_internal_id,
             channel_id=channel_url,
             subs_quantity=subs_quantity,
             current_subs=0,
             worker_pay=custom_worker_pay,
             reward_for_sub=custom_worker_pay,
             status='pending',
-            desctiption=description
+            action_type='SUBSCRIBE_CHANNEL',
+            description=description
         )
         session.add(new_order)
         await session.flush() # make flush to get order id

@@ -14,3 +14,6 @@ class TaskCreateStates(StatesGroup): # class for custom tasks
     waiting_for_pay = State()
     waiting_for_desc = State()
 
+# cancel order by admin
+class OrderCancelStates(StatesGroup):
+    waiting_for_id = State()

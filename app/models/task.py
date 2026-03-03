@@ -1,7 +1,7 @@
 import datetime
 import enum
 from sqlalchemy import (
-    DECIMAL, BIGINT, ForeignKey, VARCHAR, TIMESTAMP, UniqueConstraint, func, Enum as SQLENUM
+    DECIMAL, BIGINT, ForeignKey, VARCHAR, TIMESTAMP, UniqueConstraint, func, Enum as SQLENUM, Index
     )
 from app.database import Base
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -28,8 +28,10 @@ class Task(Base):
 
 class TaskCompletion(Base):
     __tablename__ = 'task_completions'
-    __table_args__ = (UniqueConstraint('task_id', 'user_complete', name='idx_uniq_user_task'),)
-
+    __table_args__ = (
+        UniqueConstraint('task_id', 'user_complete', name='idx_uniq_user_task'),
+        Index('idx_task_completions_user_status', 'user_complete', 'status'),
+    )
     #Relationship
     task:Mapped['Task'] = relationship(back_populates='completions')
 

@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     REDIS_URL: str
     BOT_TOKEN: str
     ADMIN_IDS: list[int] = []
+    WEBHOOK_URL: str
 
     @property
     def DATABASE_URL_asyncpg(self):

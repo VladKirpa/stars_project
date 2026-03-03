@@ -67,5 +67,15 @@ async def create_withdrawal_request(user_id:int, amount:int, session):
     except Exception as e:
         await session.rollback()
         raise HTTPException(status_code=500, detail='Something went wrong')
-    
-    
+
+
+async def get_user_withdraw_history(user_id: int, session):
+    try:
+        query = select(WithdrawalRequest).where(
+            WithdrawalRequest.user_id == user_id
+        ).order_by(WithdrawalRequest.created_at.desc())
+        
+        result = await session.scalars(query)
+        return list(result.all())
+    except Exception as e:
+        raise HTTPException(status_code=500, detail='Failed to fetch history')

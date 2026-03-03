@@ -18,6 +18,7 @@ class User(Base):
     referral_id: Mapped[int | None] = mapped_column(BIGINT, ForeignKey('users.tg_id'), default=None)
     balance: Mapped[Decimal] = mapped_column(DECIMAL(12, 2), default=0)
     stars_balance: Mapped[Decimal] = mapped_column(DECIMAL(12,2), default=0)
+    referral_earned: Mapped[int] = mapped_column(BIGINT, default=0)
     strikes: Mapped[int] = mapped_column(BIGINT, default=0)
     is_banned: Mapped[bool] = mapped_column(default=False)
 

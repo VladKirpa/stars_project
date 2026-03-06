@@ -9,24 +9,25 @@ from tg_bot.handlers.admin import admin_router
 from tg_bot.handlers.admin_tasks import admin_tasks_router
 from tg_bot.handlers.admin_withdraw import admin_withdraw_router
 from tg_bot.handlers.admin_orders import admin_orders_router
+from tg_bot.handlers.admin_alert import admin_alert_router
+
+bot = Bot(token=settings.BOT_TOKEN)
+dp = Dispatcher()
+
+dp.update.middleware(DbSessionMiddleware())
+dp.message.middleware(AuthMiddleware())
+dp.callback_query.middleware(AuthMiddleware())
+
+dp.include_router(user_router)
+dp.include_router(admin_router)
+dp.include_router(admin_tasks_router)
+dp.include_router(admin_withdraw_router)
+dp.include_router(admin_orders_router)
+dp.include_router(admin_alert_router)
 
 async def main():
     logging.basicConfig(level=logging.INFO)
-
-    bot = Bot(token=settings.BOT_TOKEN) 
-    dp = Dispatcher()
-
-    dp.update.middleware(DbSessionMiddleware())
-    dp.message.middleware(AuthMiddleware())
-    dp.callback_query.middleware(AuthMiddleware())
-
-    dp.include_router(user_router)
-    dp.include_router(admin_router)
-    dp.include_router(admin_tasks_router)
-    dp.include_router(admin_withdraw_router)
-    dp.include_router(admin_orders_router)
-
-    print("🚀 Started...")
+    print("🚀 Started in Polling mode...")
     try:
         await bot.delete_webhook(drop_pending_updates=True)
         await dp.start_polling(bot)

@@ -11,25 +11,25 @@ from app.database import bigint_pk
 
 
 class WalletType(enum.Enum):
-    EARNED='earned'
-    DEPOSITED='deposited'
-    WITHDRAW='withdraw'
+    EARNED='EARNED'
+    DEPOSITED='DEPOSITED'
+    WITHDRAW='WITHDRAW'
 
 
 
 class ActionType(enum.Enum):
-    DEPOSIT='deposit'
-    ORDER_CREATION='order_creation'
-    ORDER_REFUND='order_refund'
+    DEPOSIT='DEPOSIT'
+    ORDER_CREATION='ORDER_CREATION'
+    ORDER_REFUND='ORDER_REFUND'
 
-    TASK_PAYMENT='task_payment'
-    SYSTEM_REVENUE='system_revenue'
-    WITHDRAWAL='withdrawal'
-    ADMIN_EMISSION='admin_emission'
+    TASK_PAYMENT='TASK_PAYMENT'
+    SYSTEM_REVENUE='SYSTEM_REVENUE'
+    WITHDRAWAL='WITHDRAWAL'
+    ADMIN_EMISSION='ADMIN_EMISSION'
     ADMIN_TOPUP='admin_topup'
 
-    WITHDRAW_APPROVED='withdraw_approved'
-    WITHDRAW_REJECTED='withdraw_rejected'
+    WITHDRAW_APPROVED='WITHDRAW_APPROVED'
+    WITHDRAW_REJECTED='WITHDRAW_REJECTED'
 
 
 class TransactionLog(Base):

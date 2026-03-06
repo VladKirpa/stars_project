@@ -9,13 +9,12 @@ class AuthMiddleware(BaseMiddleware):
     async def __call__(
         self,
         handler: Callable[[TelegramObject, Dict[str, Any]], Awaitable[Any]],
-        event:TelegramObject,
-        data:Dict[str, Any],
+        event: TelegramObject,
+        data: Dict[str, Any],
     ) -> Any:
         
-        session:AsyncSession = data['session']
+        session: AsyncSession = data['session']
         
-        #check message or callback
         tg_user = None
         if isinstance(event, Message):
             tg_user = event.from_user
@@ -27,11 +26,15 @@ class AuthMiddleware(BaseMiddleware):
 
         user_db = await session.scalar(select(User).where(User.tg_id == tg_user.id))
 
-        #is banned check
         if user_db and user_db.is_banned:
+            ban_text = "🚫 Ваш аккаунт заблокирован.\n\nПо вопросам разбана пишите: @managgee"
+            
             if isinstance(event, Message):
-                await event.answer("🚫 Your account is blocked")
-            return
+                await event.answer(ban_text)
+            elif isinstance(event, CallbackQuery):
+                await event.answer(ban_text, show_alert=True)
+            return 
+        
         data['user_db'] = user_db
         
         return await handler(event, data)

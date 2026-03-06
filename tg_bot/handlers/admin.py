@@ -29,6 +29,7 @@ async def cmd_admin(message: Message):
     kb = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="📊 Финансовая статистика", callback_data="admin_stats")],
         [InlineKeyboardButton(text="🔍 Найти пользователя", callback_data="admin_find_user")],
+        [InlineKeyboardButton(text="📢 Сделать рассылку", callback_data="admin_broadcast")],
         [InlineKeyboardButton(text="🛠 Создать кастомный таск", callback_data="admin_create_task")],
         [InlineKeyboardButton(text="💸 Заявки на вывод", callback_data="admin_withdraws_0")],
         [InlineKeyboardButton(text="❌ Отменить заказ по ID", callback_data="admin_cancel_order")] 
@@ -67,6 +68,7 @@ async def back_to_menu(call: CallbackQuery):
     kb = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="📊 Финансовая статистика", callback_data="admin_stats")],
         [InlineKeyboardButton(text="🔍 Найти пользователя", callback_data="admin_find_user")],
+        [InlineKeyboardButton(text="📢 Сделать рассылку", callback_data="admin_broadcast")],
         [InlineKeyboardButton(text="🛠 Создать кастомный таск", callback_data="admin_create_task")],
         [InlineKeyboardButton(text="💸 Заявки на вывод", callback_data="admin_withdraws_0")],
         [InlineKeyboardButton(text="❌ Отменить заказ", callback_data="admin_cancel_order")] 

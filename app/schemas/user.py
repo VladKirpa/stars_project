@@ -15,5 +15,9 @@ class UserRead(UserBase):
     stars_balance: Decimal
     strikes: int
     is_banned: bool
+    frozen_balance: Decimal = Decimal('0.0')
+    completed_tasks_count: int = 0
+    referrals_count: int = 0
+    referral_earned: int = 0
 
     model_config = ConfigDict(from_attributes=True)
